@@ -24,16 +24,29 @@ export default function RentPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [estimatedPrice, setEstimatedPrice] = useState(0)
 
+  // Load collateral ngay từ đầu
   useEffect(() => {
     const loadData = async () => {
-      const carsList = await api.cars.getList()
       const collateralsList = await api.collaterals.getList()
-      setCars(carsList)
       setCollaterals(collateralsList)
     }
     loadData()
   }, [])
 
+  // Chỉ load list car khi đã chọn đủ start & end
+  useEffect(() => {
+    const loadCars = async () => {
+      if (!startDate || !endDate) return
+
+      const carsList = await api.cars.getList(startDate, endDate)
+      setCars(carsList)
+      setSelectedCar("") // reset car đã chọn
+    }
+
+    loadCars()
+  }, [startDate, endDate])
+
+  // Tính giá thuê
   useEffect(() => {
     if (selectedCar && startDate && endDate) {
       const car = cars.find((c) => c.id.toString() === selectedCar)
@@ -77,43 +90,58 @@ export default function RentPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* User Information */}
+              
+              {/* User info */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Họ tên</label>
-                <Input value={user?.name || ""} />
+                <Input value={user?.name || ""} readOnly />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Số điện thoại</label>
-                <Input value={user?.phone || ""} />
+                <Input value={user?.phone || ""} readOnly />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">CCCD</label>
-                <Input value={user?.cccd || ""} />
+                <Input value={user?.cccd || ""} readOnly />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Địa chỉ</label>
-                <Input value={user?.address || ""} />
+                <Input value={user?.address || ""} readOnly />
               </div>
 
               <hr className="my-6" />
 
-              {/* Rental Information */}
+              {/* Start & End date */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Chọn xe *</label>
-                <Select value={selectedCar} onValueChange={setSelectedCar}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn xe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cars.map((car) => (
-                      <SelectItem key={car.id} value={car.id.toString()}>
-                        {car.name} ({car.brand}) - {car.pricePerDay.toLocaleString()} VNĐ/ngày
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium">Ngày bắt đầu *</label>
+                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
               </div>
 
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Ngày kết thúc *</label>
+                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+              </div>
+
+              {/* Car only available after selecting date */}
+              {startDate && endDate && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Chọn xe *</label>
+                  <Select value={selectedCar} onValueChange={setSelectedCar}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn xe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cars.map((car) => (
+                        <SelectItem key={car.id} value={car.id.toString()}>
+                          {car.name} ({car.brand}) - {car.pricePerDay.toLocaleString()} VNĐ/ngày
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Collateral */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Tài sản đảm bảo *</label>
                 <Select value={selectedCollateral} onValueChange={setSelectedCollateral}>
@@ -130,16 +158,7 @@ export default function RentPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Ngày bắt đầu *</label>
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Ngày kết thúc *</label>
-                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
-              </div>
-
+              {/* Estimated price */}
               {estimatedPrice > 0 && (
                 <div className="bg-muted p-4 rounded-lg">
                   <p className="text-sm text-muted-foreground">Giá ước tính</p>

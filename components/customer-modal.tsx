@@ -1,31 +1,30 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
-import type { Customer } from "@/lib/mock-api"
+import type { User } from "@/contexts/auth-context"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-interface CustomerModalProps {
+interface UserModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  customer: Customer | null
-  onSave: (data: Partial<Customer>) => Promise<void>
+  user: User | null
+  onSave: (data: Partial<User>) => Promise<void>
 }
 
-export default function CustomerModal({ open, onOpenChange, customer, onSave }: CustomerModalProps) {
-  const [formData, setFormData] = useState<Partial<Customer>>({})
+export default function UserModal({ open, onOpenChange, user, onSave }: UserModalProps) {
+  const [formData, setFormData] = useState<Partial<User>>({})
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (customer) {
-      setFormData(customer)
+    if (user) {
+      setFormData(user)
     } else {
       setFormData({})
     }
-  }, [customer, open])
+  }, [user, open])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -49,26 +48,41 @@ export default function CustomerModal({ open, onOpenChange, customer, onSave }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{customer ? "Sửa thông tin khách hàng" : "Thêm khách hàng mới"}</DialogTitle>
-          <DialogDescription>Nhập hoặc cập nhật thông tin khách hàng</DialogDescription>
+          <DialogTitle>{user ? "Sửa thông tin người dùng" : "Thêm người dùng mới"}</DialogTitle>
+          <DialogDescription>Nhập hoặc cập nhật thông tin người dùng</DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Họ tên</label>
             <Input name="name" value={formData.name || ""} onChange={handleChange} required />
           </div>
+
+          {/* Email */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Email</label>
+            <Input name="email" value={formData.email || ""} onChange={handleChange} />
+          </div>
+
+          {/* Phone */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Số điện thoại</label>
             <Input name="phone" value={formData.phone || ""} onChange={handleChange} />
           </div>
+
+          {/* CCCD */}
           <div className="space-y-2">
             <label className="text-sm font-medium">CCCD</label>
             <Input name="cccd" value={formData.cccd || ""} onChange={handleChange} />
           </div>
+
+          {/* Address */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Địa chỉ</label>
             <Input name="address" value={formData.address || ""} onChange={handleChange} />
           </div>
+
           <div className="flex gap-2 justify-end">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Hủy

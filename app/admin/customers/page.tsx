@@ -5,8 +5,7 @@ import { ProtectedLayout } from "@/components/protected-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { api, type Customer } from "@/lib/mock-api"
-import CustomerModal from "@/components/customer-modal"
+import type { User } from "@/contexts/auth-context"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,21 +16,23 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Trash2, Edit2 } from "lucide-react"
+import { api } from "@/lib/mock-api"
+import UserModal from "@/components/customer-modal"
 
-export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>([])
+export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const loadCustomers = async () => {
+  const loadUsers = async () => {
     setIsLoading(true)
     try {
-      const result = await api.customers.getList(page, limit)
-      setCustomers(result.data)
+      const result = await api.users.getList(page, limit)
+      setUsers(result.data)
       setTotal(result.total)
     } finally {
       setIsLoading(false)
@@ -39,26 +40,26 @@ export default function CustomersPage() {
   }
 
   useEffect(() => {
-    loadCustomers()
+    loadUsers()
   }, [page])
 
-  const handleEdit = (customer: Customer) => {
-    setEditingCustomer(customer)
+  const handleEdit = (user: User) => {
+    setEditingUser(user)
     setIsModalOpen(true)
   }
 
-  const handleSave = async (data: Partial<Customer>) => {
-    if (editingCustomer) {
-      await api.customers.update(editingCustomer.id, data)
-      setEditingCustomer(null)
+  const handleSave = async (data: Partial<User>) => {
+    if (editingUser) {
+      await api.users.update(editingUser.id, data)
+      setEditingUser(null)
     }
     setIsModalOpen(false)
-    loadCustomers()
+    loadUsers()
   }
 
   const handleDelete = async (id: string) => {
-    await api.customers.delete(id)
-    loadCustomers()
+    await api.users.delete(id)
+    loadUsers()
   }
 
   const totalPages = Math.ceil(total / limit)
@@ -67,12 +68,12 @@ export default function CustomersPage() {
     <ProtectedLayout requiredRole="admin">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Quản lí khách hàng</h2>
+          <h2 className="text-2xl font-bold">Quản lý người dùng</h2>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Danh sách khách hàng</CardTitle>
+            <CardTitle>Danh sách người dùng</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -80,6 +81,7 @@ export default function CustomersPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Họ tên</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>Số điện thoại</TableHead>
                     <TableHead>CCCD</TableHead>
                     <TableHead>Địa chỉ</TableHead>
@@ -87,17 +89,20 @@ export default function CustomersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {customers?.map((customer) => (
-                    <TableRow key={customer.id}>
-                      <TableCell>{customer.name}</TableCell>
-                      <TableCell>{customer.phone}</TableCell>
-                      <TableCell>{customer.cccd}</TableCell>
-                      <TableCell>{customer.address}</TableCell>
+                  {users?.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.phone}</TableCell>
+                      <TableCell>{user.cccd}</TableCell>
+                      <TableCell>{user.address}</TableCell>
+
                       <TableCell className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(customer)}>
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(user)}>
                           <Edit2 className="w-4 h-4 mr-1" />
                           Sửa
                         </Button>
+
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="destructive" size="sm">
@@ -105,15 +110,17 @@ export default function CustomersPage() {
                               Xóa
                             </Button>
                           </AlertDialogTrigger>
+
                           <AlertDialogContent>
                             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Bạn có chắc muốn xóa khách hàng này? Hành động này không thể hoàn tác.
+                              Bạn có chắc muốn xóa người dùng này? Hành động này không thể hoàn tác.
                             </AlertDialogDescription>
+
                             <div className="flex gap-2 justify-end">
                               <AlertDialogCancel>Hủy</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(customer.id)}
+                                onClick={() => handleDelete(user.id)}
                                 className="bg-destructive hover:bg-destructive/90"
                               >
                                 Xóa
@@ -152,10 +159,10 @@ export default function CustomersPage() {
           </CardContent>
         </Card>
 
-        <CustomerModal
+        <UserModal
           open={isModalOpen}
           onOpenChange={setIsModalOpen}
-          customer={editingCustomer}
+          user={editingUser}
           onSave={handleSave}
         />
       </div>

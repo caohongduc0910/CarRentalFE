@@ -17,7 +17,7 @@ interface ViolationModalProps {
 }
 
 export default function ViolationModal({ open, onOpenChange, violation, onSave }: ViolationModalProps) {
-  const [formData, setFormData] = useState<Omit<Violation, "id">>({
+  const [formData, setFormData] = useState<Omit<Partial<Violation>, "id">>({
     name: "",
     price: 0,
     description: "",

@@ -14,6 +14,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [cccd, setCccd] = useState("")
+  const [address, setAddress] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -37,7 +40,7 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      await register(email, password, name)
+      await register(email, password, name, phone, cccd, address)
       router.push("/")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed")
@@ -71,6 +74,35 @@ export default function RegisterPage() {
                 placeholder="Nhập email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Số điện thoại</label>
+              <Input
+                placeholder="Nhập số điện thoại"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">CCCD</label>
+              <Input
+                placeholder="Nhập CCCD"
+                value={cccd}
+                onChange={(e) => setCccd(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Địa chỉ</label>
+              <Input
+                placeholder="Nhập địa chỉ"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
                 required
               />
             </div>
